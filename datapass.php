@@ -122,6 +122,16 @@
    		}
    		echo json_encode($data);
    }
-   //http://localhost:8080/php_server/datapass?liq_update=setupdate
+   if(isset($_GET['liq_delete'])=='deleted'){
+   		$query = 'delete from goldtechcashadvance.dbo.liquidation where id = ?';
+   		$statement = $database->sqlcon()->prepare($query);
+   		$statement->bindParam(1, $_POST['refid'], PDO::PARAM_STR);
+   		$statement->execute();
+   		if($statement->rowCount() > 0){
+   			$data = array('mssql_error'=>false, 'message'=>'Success deleted liquidations Refno: '.$_POST['refno']);
+   		}
+   		echo json_encode($data);
+   }
+   //http://localhost:8080/php_server/datapass?liq_delete=deleted
  ?>
 
