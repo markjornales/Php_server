@@ -42,7 +42,7 @@
 	if(isset($_GET['cashadvance'])=='getData'){
 		$dataPass = $_POST['get_id'];
 		$query = 'select listnames from GoldtechCashAdvance.dbo.company_names where id=?';
-		$query2 = 'select ca_number,date_of_ca,date_needed,ca_status from GoldtechCashAdvance.dbo.cash_advances where record_id=?'; 
+		$query2 = 'select ca_number,convert(varchar, date_of_ca, 110) date_of_ca,convert(varchar, date_needed, 110) date_needed,ca_status from GoldtechCashAdvance.dbo.cash_advances where record_id=?'; 
 		$stmt_mssql=$database->sqlcon()->prepare($query);
 		$stmt_mssql2 = $database->sqlcon()->prepare($query2);
 		$stmt_mssql->bindParam(1, $dataPass,PDO::PARAM_STR);
@@ -66,8 +66,9 @@
 	}
    if(isset($_GET['liqdate'])=='getliq'){
    		$dataPass= $_POST['ca_number'];
-   		$query = 'select max(id) liqref from GoldtechCashAdvance.dbo.liquidation where ca_number = ?';
-   		$query2 = 'select liqd_refno,liqd_description,liqd_date,liqd_amount from GoldtechCashAdvance.dbo.liquidation where ca_number = ?';
+   		$query = 'select count(id) liqref from GoldtechCashAdvance.dbo.liquidation where ca_number = ?';
+   		$query2 = 'select id,liqd_refno,liqd_description,convert(varchar, liqd_date, 110) liqd_date,liqd_amount 
+   		from GoldtechCashAdvance.dbo.liquidation where ca_number = ?';
    		$stmt_data1 = $database->sqlcon()->prepare($query);
    		$stmt_data2 = $database->sqlcon()->prepare($query2);
    		$stmt_data1->bindParam(1, $dataPass, PDO::PARAM_STR);
@@ -80,7 +81,7 @@
    			$datacollect['liquidation']=[];
    			while ($rows2=$stmt_data2->fetch(PDO::FETCH_ASSOC)) {
    				array_push($datacollect['liquidation'], 
-   					array('liqrefno'=>$rows2['liqd_refno'],
+   					array('refid'=>$rows2['id'],'liqrefno'=>$rows2['liqd_refno'],
    						'liqd_description'=>$rows2['liqd_description'],
    						'liqd_date'=>$rows2['liqd_date'],
    						'liqd_amount'=>$rows2['liqd_amount']
@@ -90,6 +91,34 @@
    		}
    		echo json_encode($datacollect);
    }
- // localhost:8080/PHP_server/datapass?liqdate=getliq
+   if(isset($_GET['liq_add'])=='setliq'){
+   		$query = 'insert into goldtechcashadvance.dbo.liquidation (liqd_refno,liqd_description,liqd_date,liqd_amount,ca_number) 
+   		values (?,?,?,?,?)';
+   		$statement = $database->sqlcon()->prepare($query);
+   		$statement->bindParam(1, $_POST['refno'],PDO::PARAM_STR);
+   		$statement->bindParam(2, $_POST['descript'],PDO::PARAM_STR);
+   		$statement->bindParam(3, $_POST['date'],PDO::PARAM_STR);
+   		$statement->bindParam(4, $_POST['amount'],PDO::PARAM_STR);
+   		$statement->bindParam(5, $_POST['ca_number'],PDO::PARAM_STR);
+   		$statement->execute();
+   		if($statement->rowCount() > 0){
+   			 $data = array('mssql_error'=>false , 'message'=>'Success Add new liquidations');
+   		}
+   		echo json_encode($data);
+   }
+   if(isset($_GET['liq_update'])=='setupdate'){
+   		$query = 'update goldtechcashadvance.dbo.liquidation set liqd_description=?,liqd_date=?,liqd_amount=? where id=?';
+   		$statement = $database->sqlcon()->prepare($query);
+   		$statement->bindParam(1, $_POST['descript'],PDO::PARAM_STR);
+   		$statement->bindParam(2, $_POST['date'],PDO::PARAM_STR);
+   		$statement->bindParam(3, $_POST['amount'],PDO::PARAM_STR);
+   		$statement->bindParam(4, $_POST['refid'],PDO::PARAM_STR);
+   		$statement->execute();
+   		if($statement->rowCount() > 0){
+   			$data = array('mssql_error'=>false, 'message'=>'Success Update input Liquidations');
+   		}
+   		echo json_encode($data);
+   }
+   //http://localhost:8080/php_server/datapass?liq_update=setupdate
  ?>
 
