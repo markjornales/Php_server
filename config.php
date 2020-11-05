@@ -12,8 +12,6 @@ class sqlserver {
 			return sqlserver::$consql;
 	}
 
-	
-
 }
 
 
