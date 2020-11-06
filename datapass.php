@@ -134,6 +134,45 @@
    		}
    		echo json_encode($data);
    }
-   //http://localhost:8080/php_server/datapass?liq_delete=deleted
+   if(isset($_GET['getca'])=='info'){
+   		$query = 'select count(ca_number)+1 ca_number from goldtechcashadvance.dbo.cash_advanceForms where unique_id=?';
+   		$query_info = 'select id,unique_id,ca_number,car_parts,freight,quantity,description_ca,plateno,unitPrice,totalAmount,requestByDep,
+   						name,purpose,ca_amount,date_needed,date_of_ca from GoldtechCashAdvance.dbo.cash_advanceForms where unique_id=?';
+   		$statement = $database->sqlcon()->prepare($query);
+   		$statement_info = $database->sqlcon()->prepare($query_info);
+   		$statement->bindParam(1, $_POST['unique_id'],PDO::PARAM_STR);
+   		$statement_info->bindParam(1, $_POST['unique_id'],PDO::PARAM_STR);
+   		$statement->execute();
+   		$statement_info->execute();
+   		$results = $statement->fetchAll();
+   		if($statement->rowCount()>0){
+   			foreach ($results as $rows) {
+   				$data['ca_number']=$rows['ca_number'];
+   				$data['ca_info'] = [];
+   				while($rows_info=$statement_info->fetch(PDO::FETCH_ASSOC)){
+   					array_push($data['ca_info'], 
+   						array('ca_number'=>$rows_info['ca_number'],
+   						'car_parts' => $rows_info['car_parts'],
+   						'freight' => $rows_info['freight'],
+   						'quantity' => $rows_info['quantity'],
+   						'description_ca' => $rows_info['description_ca'],
+   						'plateno' => $rows_info['plateno'],
+   						'unitPrice' => $rows_info['unitPrice'],
+   						'totalAmount' => $rows_info['totalAmount'],
+   						'requestByDep' => $rows_info['requestByDep'],
+   						'name' => $rows_info['name'],
+   						'purpose' => $rows_info['purpose'],
+   						'ca_amount' => $rows_info['ca_amount'],
+   						'date_needed' => $rows_info['date_needed'],
+   						'date_of_ca' => $rows_info['date_of_ca'])
+   					);
+   				}
+   			}
+   		} else {
+   			$data['ca_number'] = 1;
+   			$data['ca_info']=[];
+   		}
+   		echo json_encode($data);
+   }
  ?>
 
