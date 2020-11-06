@@ -137,7 +137,7 @@
    if(isset($_GET['getca'])=='info'){
    		$query = 'select count(ca_number)+1 ca_number from goldtechcashadvance.dbo.cash_advanceForms where unique_id=?';
    		$query_info = 'select id,unique_id,ca_number,car_parts,freight,quantity,description_ca,plateno,unitPrice,totalAmount,requestByDep,
-   						name,purpose,ca_amount,date_needed,date_of_ca from GoldtechCashAdvance.dbo.cash_advanceForms where unique_id=?';
+   						name,purpose,ca_amount,convert(varchar,date_needed,110) date_needed,convert(varchar,date_of_ca,110) date_of_ca from GoldtechCashAdvance.dbo.cash_advanceForms where unique_id=?';
    		$statement = $database->sqlcon()->prepare($query);
    		$statement_info = $database->sqlcon()->prepare($query_info);
    		$statement->bindParam(1, $_POST['unique_id'],PDO::PARAM_STR);
@@ -150,8 +150,9 @@
    				$data['ca_number']=$rows['ca_number'];
    				$data['ca_info'] = [];
    				while($rows_info=$statement_info->fetch(PDO::FETCH_ASSOC)){
-   					array_push($data['ca_info'], 
-   						array('ca_number'=>$rows_info['ca_number'],
+   					array_push($data['ca_info'],
+   						array('refid'=>$rows_info['id'],
+   						'ca_number'=>$rows_info['ca_number'],
    						'car_parts' => $rows_info['car_parts'],
    						'freight' => $rows_info['freight'],
    						'quantity' => $rows_info['quantity'],
@@ -207,6 +208,34 @@
 		$statement_table_2->execute();
 		$data = array('mssql_error'=> false, 'message'=>'success new added ca');
 		echo json_encode($data);
+   }
+
+   if(isset($_GET['updateform_ca'])=='updateca'){
+   		$query_table1 = 'update goldtechcashadvance.dbo.cash_advances set date_of_ca=?, date_needed=? where id=?';
+   		$query_table2 = 'update goldtechcashadvance.dbo.cash_advanceForms set car_parts=?, freight=?, quantity=?, description_ca=?, plateno=?, unitPrice=?, totalAmount=?, requestByDep=?,name=?, purpose=?, ca_amount=?, date_needed=?,date_of_ca=? where id=?';
+   		$stmt_table1 = $database->sqlcon()->prepare($query_table1);
+   		$stmt_table2 = $database->sqlcon()->prepare($query_table2);
+	   		$stmt_table1->bindParam(1,$_POST['dateofca'],PDO::PARAM_STR);
+	   		$stmt_table1->bindParam(2,$_POST['dateneeded'],PDO::PARAM_STR);
+	   		$stmt_table1->bindParam(3,$_POST['refid'],PDO::PARAM_STR); 
+	   		$stmt_table2->bindParam(1,$_POST['car_parts'],PDO::PARAM_STR);
+	   		$stmt_table2->bindParam(2,$_POST['freight'],PDO::PARAM_STR);
+	   		$stmt_table2->bindParam(3,$_POST['quantity'],PDO::PARAM_STR);
+	   		$stmt_table2->bindParam(4,$_POST['descriptions'],PDO::PARAM_STR);
+	   		$stmt_table2->bindParam(5,$_POST['plate_no'],PDO::PARAM_STR);
+	   		$stmt_table2->bindParam(6,$_POST['unit_price'],PDO::PARAM_STR);
+	   		$stmt_table2->bindParam(7,$_POST['total_mount'],PDO::PARAM_STR);
+	   		$stmt_table2->bindParam(8,$_POST['requestByDept'],PDO::PARAM_STR);
+	   		$stmt_table2->bindParam(9,$_POST['name'],PDO::PARAM_STR);
+	   		$stmt_table2->bindParam(10,$_POST['purpose'],PDO::PARAM_STR);
+	   		$stmt_table2->bindParam(11,$_POST['ca_amount'],PDO::PARAM_STR);
+	   		$stmt_table2->bindParam(12,$_POST['dateneeded'],PDO::PARAM_STR);
+	   		$stmt_table2->bindParam(13,$_POST['dateofca'],PDO::PARAM_STR);
+	   		$stmt_table2->bindParam(14,$_POST['refid'],PDO::PARAM_STR); 
+   		$stmt_table1->execute();
+   		$stmt_table2->execute();
+   		$data = array('mssql_error'=>false, 'message'=>'Successful updated CA#'.$_POST['ca_number']);
+   		echo json_encode($data);
    }
  ?>
 
