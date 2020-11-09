@@ -13,6 +13,7 @@
 		$data =array('mssqlStatus'=>true,'message'=>'Successful Add Company');
 		echo json_encode($data);
 	}
+
 	if(isset($_GET['editData'])=='true'){
 		$query = 'update GoldtechCashAdvance.dbo.company_names set listnames=?,lastupdate=? where id=?';
 		$stmt = $database->sqlcon()->prepare($query);
@@ -44,7 +45,7 @@
 	if(isset($_GET['cashadvance'])=='getData'){
 		$dataPass = $_POST['get_id'];
 		$query = 'select unique_id,listnames from GoldtechCashAdvance.dbo.company_names where unique_id=?';
-		$query2 = 'select ca_number,convert(varchar, date_of_ca, 110) date_of_ca,convert(varchar, date_needed, 110) date_needed,ca_status from GoldtechCashAdvance.dbo.cash_advances where unique_id=?'; 
+		$query2 = 'select ca_number,convert(varchar, date_of_ca, 110) date_of_ca,convert(varchar, date_needed, 110) date_needed,ca_status from GoldtechCashAdvance.dbo.cash_advances where unique_id=? order by date_of_ca asc'; 
 		$stmt_mssql=$database->sqlcon()->prepare($query);
 		$stmt_mssql2 = $database->sqlcon()->prepare($query2);
 		$stmt_mssql->bindParam(1, $dataPass,PDO::PARAM_STR);
@@ -237,5 +238,45 @@
    		$data = array('mssql_error'=>false, 'message'=>'Successful updated CA#'.$_POST['ca_number']);
    		echo json_encode($data);
    }
+
+   if(isset($_GET['lastupdate'])=='lastupdate'){
+    if(isset($_POST['datenow'])&&isset($_POST['unique_id'])){
+         try {
+               $totalItems = checkTotal_items($_POST['unique_id']);
+               $query = 'update GoldtechCashAdvance.dbo.company_names set totalca=?, lastupdate=? where unique_id=?';
+               $stmt = $database->sqlcon()->prepare($query);
+               $stmt->bindParam(1, $totalItems ,PDO::PARAM_STR);
+               $stmt->bindParam(2, $_POST['datenow'],PDO::PARAM_STR);
+               $stmt->bindParam(3, $_POST['unique_id'],PDO::PARAM_STR);
+            $stmt->execute();
+            $data = [];
+            if($stmt){
+               $data['mssql_error']= false;
+               $data['message']='Successful updated';
+            }  
+         }
+         catch(PDOException $error){
+             $data['mssql_error']=true;
+               $data['message']=$error;
+         }
+         echo json_encode($data);
+      }
+      else {
+         $data['error']=true;
+         $data['message']='please check valid properties';
+         echo json_encode($data);
+      }
+    }
+   function checkTotal_items($unique_id){
+         $database = new sqlserver();
+         $query = 'select count(id) items from GoldtechCashAdvance.dbo.cash_advances where unique_id=?';
+         $stmt = $database->sqlcon()->prepare($query);
+         $stmt->bindParam(1, $unique_id, PDO::PARAM_STR);
+         $stmt->execute();
+         while($rows = $stmt->fetch(PDO::FETCH_ASSOC)){ 
+            return $rows['items'];
+         }
+    }
+
  ?>
 
