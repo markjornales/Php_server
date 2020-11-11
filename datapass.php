@@ -289,7 +289,6 @@
             $prepareStatement->bindParam(':unique_id',$_POST['unique_id']);
             $prepareStatement->execute();
             $datacollect = [];
-          
                while ($rows = $prepareStatement->fetch(PDO::FETCH_ASSOC)) {
                      $data['id']=$rows['id'];
                      $data['ca_number']=$rows['ca_number'];
@@ -313,7 +312,41 @@
          echo json_encode($response);
       }
     }
-    
 
+    if(isset($_GET['updatestat'])){
+      if(isset($_POST['ca_number'])&&isset($_POST['unique_id'])){
+         try{
+            $updateStat = new datacollect();
+            $dataset = array(
+               'unique_id'=>$_POST['unique_id'],
+               'ca_number'=>$_POST['ca_number'],
+               'totalca'=>0,
+               'total_liq'=>0
+            );
+            $updateStat->caNoQuery($_POST['ca_number'], $_POST['unique_id']);
+            if($updateStat->caStatemt->rowCount()>0){
+               foreach ($updateStat->caResult as $value) {
+                  $dataset['totalca']+=($value['totalAmount']+$value['ca_amount']);
+                  $updateStat->liqQueryca($_POST['ca_number'], $_POST['unique_id']);
+                  if($updateStat->liqStatement->rowCount()>0){
+                     foreach ($updateStat->liqResult as $data) {
+                        $dataset['total_liq']+=$data['liqd_amount'];
+                     }
+                  }
+               }
+            }
+            echo json_encode($updateStat->caUpdateStat($dataset));
+         } catch(PDOException $error){
+             $message['error']=true;
+             $message['message']=$error;
+             echo json_encode($message);
+         }
+         
+      }else{
+         $message['error']=true;
+         $message['message']='Make sure, your provided Properties and names are valid';
+         echo json_encode($message);
+      }
+    }
  ?>
 

@@ -70,7 +70,6 @@ class PDF extends FPDF {
 
 }
 
-
 class Ca_form extends PDF { 
     function headerPage_Ca($totalca,$border=0) {
       $this->SetTitle("Statement of account",false);
@@ -179,13 +178,47 @@ class datacollect extends sqlserver {
     $this->caResult = $this->caStatemt->fetchAll();
   }
   function liq_query($unique_id, $value){
-    $queryString = 'select * from goldtechcashadvance.dbo.liquidation where unique_id=:unique_id and ca_number=:ca_number';
-        $this->liqStatement = $this->sqlcon()->prepare($queryString);
+      $queryString = 'select * from goldtechcashadvance.dbo.liquidation where unique_id=:unique_id and ca_number=:ca_number';
+      $this->liqStatement = $this->sqlcon()->prepare($queryString);
       $this->liqStatement->bindParam(':unique_id', $unique_id);
       $this->liqStatement->bindParam(':ca_number', $value['ca_number']);
       $this->liqStatement->execute();
       $this->liqResult =  $this->liqStatement->fetchAll();
   }
+
+  function caUpdateStat($infor){
+    $unique_id = $infor['unique_id'];
+    $ca_number = $infor['ca_number'];
+    $ca_status = $infor['totalca'] > $infor['total_liq']?$infor['total_liq']==0?'pending...':'partial payment':'paid';
+    $sqlstring = 'update goldtechcashadvance.dbo.cash_advances set ca_status=:ca_status where unique_id=:unique_id and ca_number=:ca_number';
+    $stmt = $this->sqlcon()->prepare($sqlstring);
+    $stmt->bindParam(':unique_id', $unique_id);
+    $stmt->bindParam(':ca_status', $ca_status);
+    $stmt->bindParam(':ca_number', $ca_number);
+    $stmt->execute();
+    $message['message'] = 'success updated';
+    $message['status'] = $ca_status;
+    $message['error'] = false;
+    return $message;  
+  }
+  function caNoQuery($ca_number,$unique_id){
+    $queryString = 'select * from goldtechcashadvance.dbo.cash_advanceForms where unique_id=:unique_id and ca_number=:ca_number';
+    $this->caStatemt = $this->sqlcon()->prepare($queryString);
+    $this->caStatemt->bindParam(':unique_id', $unique_id);
+    $this->caStatemt->bindParam(':ca_number',$ca_number);
+    $this->caStatemt->execute();
+    $this->caResult = $this->caStatemt->fetchAll();
+  }
+
+  function liqQueryca($ca_number, $unique_id){
+    $queryString = 'select * from goldtechcashadvance.dbo.liquidation where unique_id=:unique_id and ca_number=:ca_number';
+    $this->liqStatement = $this->sqlcon()->prepare($queryString);
+    $this->liqStatement->bindParam(':unique_id', $unique_id);
+    $this->liqStatement->bindParam(':ca_number', $ca_number);
+    $this->liqStatement->execute();
+    $this->liqResult = $this->liqStatement->fetchAll();
+  }
+
 
 }
 
