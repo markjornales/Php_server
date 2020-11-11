@@ -45,7 +45,7 @@
 	if(isset($_GET['cashadvance'])=='getData'){
 		$dataPass = $_POST['get_id'];
 		$query = 'select unique_id,listnames from GoldtechCashAdvance.dbo.company_names where unique_id=?';
-		$query2 = 'select ca_number,convert(varchar, date_of_ca, 110) date_of_ca,convert(varchar, date_needed, 110) date_needed,ca_status from GoldtechCashAdvance.dbo.cash_advances where unique_id=? order by date_of_ca asc'; 
+		$query2 = 'select ca_number,convert(varchar, date_of_ca, 110) date_of_ca,convert(varchar, date_needed, 110) date_needed,ca_status from GoldtechCashAdvance.dbo.cash_advances where unique_id=?'; 
 		$stmt_mssql=$database->sqlcon()->prepare($query);
 		$stmt_mssql2 = $database->sqlcon()->prepare($query2);
 		$stmt_mssql->bindParam(1, $dataPass,PDO::PARAM_STR);
@@ -281,7 +281,7 @@
     if(isset($_GET['datesearch'])){
       if(isset($_POST['datefrom_liq'])&&isset($_POST['dateTo_liq'])&&isset($_POST['unique_id'])){
          try{
-            $querySelect = 'select ca_number,date_of_ca,date_needed,ca_status from GoldtechCashAdvance.dbo.cash_advances 
+            $querySelect = 'select id,ca_number,date_of_ca,date_needed,ca_status from GoldtechCashAdvance.dbo.cash_advances 
             where date_of_ca between :datefrom and :dateto and unique_id=:unique_id order by date_of_ca asc';
             $prepareStatement = $database->sqlcon()->prepare($querySelect);
             $prepareStatement->bindParam(':datefrom',$_POST['datefrom_liq']);
@@ -291,6 +291,7 @@
             $datacollect = [];
           
                while ($rows = $prepareStatement->fetch(PDO::FETCH_ASSOC)) {
+                     $data['id']=$rows['id'];
                      $data['ca_number']=$rows['ca_number'];
                      $data['date_of_ca']=$rows['date_of_ca'];
                      $data['date_needed']=$rows['date_needed'];
@@ -312,6 +313,7 @@
          echo json_encode($response);
       }
     }
+    
 
  ?>
 
