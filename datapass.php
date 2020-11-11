@@ -278,5 +278,40 @@
          }
     }
 
+    if(isset($_GET['datesearch'])){
+      if(isset($_POST['datefrom_liq'])&&isset($_POST['dateTo_liq'])&&isset($_POST['unique_id'])){
+         try{
+            $querySelect = 'select ca_number,date_of_ca,date_needed,ca_status from GoldtechCashAdvance.dbo.cash_advances 
+            where date_of_ca between :datefrom and :dateto and unique_id=:unique_id order by date_of_ca asc';
+            $prepareStatement = $database->sqlcon()->prepare($querySelect);
+            $prepareStatement->bindParam(':datefrom',$_POST['datefrom_liq']);
+            $prepareStatement->bindParam(':dateto', $_POST['dateTo_liq']);
+            $prepareStatement->bindParam(':unique_id',$_POST['unique_id']);
+            $prepareStatement->execute();
+            $datacollect = [];
+          
+               while ($rows = $prepareStatement->fetch(PDO::FETCH_ASSOC)) {
+                     $data['ca_number']=$rows['ca_number'];
+                     $data['date_of_ca']=$rows['date_of_ca'];
+                     $data['date_needed']=$rows['date_needed'];
+                     $data['ca_status']=$rows['ca_status'];
+                     $datacollect[]=$data;
+               }
+            
+            echo json_encode($datacollect);
+         }
+         catch(PDOException $error){
+            $response['message']= $error;
+            $response['error'] = true;
+            echo json_encode($response);
+         }
+      }
+      else{
+         $response['message'] = 'Please make sure, your provided Properties and Names are valid';
+         $response['error'] = true;
+         echo json_encode($response);
+      }
+    }
+
  ?>
 
