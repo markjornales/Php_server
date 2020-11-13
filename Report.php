@@ -53,16 +53,19 @@
 					$pdfreport->Output('F','LiquidationReport.pdf');
 					$message['error']= false;
 					$message['url_report']='http://localhost:8080/php_server/LiquidationReport.pdf';
+					header('Content-Type: application/json');
 					echo json_encode($message);
 				} catch(PDOException $error){
 					$message['error']=true;
 		             $message['message']=$error;
+		             header('Content-Type: application/json');
 		             echo json_encode($message);
 				}
 
 	   } else {
 	   		$message['error']=true;
 	   		$message['message'] = 'Please make sure properties and names are valid';
+	   		header('Content-Type: application/json');
 	   		echo json_encode($message);
 	   }
 	}

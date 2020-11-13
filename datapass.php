@@ -11,6 +11,7 @@
 		$stmt_mssql->bindParam(4, $_POST['unique_id'],PDO::PARAM_STR);
 		$stmt_mssql->execute();
 		$data =array('mssqlStatus'=>true,'message'=>'Successful Add Company');
+      header('Content-Type: application/json');
 		echo json_encode($data);
 	}
 
@@ -22,6 +23,7 @@
 		$stmt->bindParam(3, $_POST['dataTarget'],PDO::PARAM_STR);
 		$stmt->execute();
 		$data =array('mssqlStatus'=>true,'message'=>'Success Updated Company name');
+      header('Content-Type: application/json');
 		echo json_encode($data);
 	}
 	if(isset($_GET['companynames'])=='get'){
@@ -40,6 +42,7 @@
 			$data['unique_id'] = $rows['unique_id'];
 			$datacollect[] = $data;
 		}
+      header('Content-Type: application/json');
 		echo json_encode($datacollect);
 	}
 	if(isset($_GET['cashadvance'])=='getData'){
@@ -66,6 +69,7 @@
 				); 
 			}
 		}
+      header('Content-Type: application/json');
 		echo json_encode($datacollect);
 	}
    if(isset($_GET['liqdate'])=='getliq'){ 
@@ -94,6 +98,7 @@
    				);
    			}
    		}
+         header('Content-Type: application/json');
    		echo json_encode($datacollect);
    }
    if(isset($_GET['liq_add'])=='setliq'){
@@ -110,6 +115,7 @@
    		if($statement->rowCount() > 0){
    			 $data = array('mssql_error'=>false , 'message'=>'Success Add new liquidations');
    		}
+         header('Content-Type: application/json');
    		echo json_encode($data);
    }
    if(isset($_GET['liq_update'])=='setupdate'){
@@ -123,6 +129,7 @@
    		if($statement->rowCount() > 0){
    			$data = array('mssql_error'=>false, 'message'=>'Success Update input Liquidations');
    		}
+         header('Content-Type: application/json');
    		echo json_encode($data);
    }
    if(isset($_GET['liq_delete'])=='deleted'){
@@ -133,6 +140,7 @@
    		if($statement->rowCount() > 0){
    			$data = array('mssql_error'=>false, 'message'=>'Success deleted liquidations Refno: '.$_POST['refno']);
    		}
+         header('Content-Type: application/json');
    		echo json_encode($data);
    }
    if(isset($_GET['getca'])=='info'){
@@ -174,6 +182,7 @@
    			$data['ca_number'] = 1;
    			$data['ca_info']=[];
    		}
+         header('Content-Type: application/json');
    		echo json_encode($data);
    }
    if(isset($_GET['addform_ca'])=='addca'){
@@ -208,6 +217,7 @@
 		$statement_table_1->execute();
 		$statement_table_2->execute();
 		$data = array('mssql_error'=> false, 'message'=>'success new added ca');
+      header('Content-Type: application/json');
 		echo json_encode($data);
    }
 
@@ -236,6 +246,7 @@
    		$stmt_table1->execute();
    		$stmt_table2->execute();
    		$data = array('mssql_error'=>false, 'message'=>'Successful updated CA#'.$_POST['ca_number']);
+         header('Content-Type: application/json');
    		echo json_encode($data);
    }
 
@@ -259,11 +270,13 @@
              $data['mssql_error']=true;
                $data['message']=$error;
          }
+         header('Content-Type: application/json');
          echo json_encode($data);
       }
       else {
          $data['error']=true;
          $data['message']='please check valid properties';
+         header('Content-Type: application/json');
          echo json_encode($data);
       }
     }
@@ -297,18 +310,20 @@
                      $data['ca_status']=$rows['ca_status'];
                      $datacollect[]=$data;
                }
-            
+            header('Content-Type: application/json');
             echo json_encode($datacollect);
          }
          catch(PDOException $error){
             $response['message']= $error;
             $response['error'] = true;
+            header('Content-Type: application/json');
             echo json_encode($response);
          }
       }
       else{
          $response['message'] = 'Please make sure, your provided Properties and Names are valid';
          $response['error'] = true;
+         header('Content-Type: application/json');
          echo json_encode($response);
       }
     }
@@ -335,16 +350,54 @@
                   }
                }
             }
+            header('Content-Type: application/json');
             echo json_encode($updateStat->caUpdateStat($dataset));
          } catch(PDOException $error){
              $message['error']=true;
              $message['message']=$error;
+             header('Content-Type: application/json');
              echo json_encode($message);
          }
          
       }else{
          $message['error']=true;
          $message['message']='Make sure, your provided Properties and names are valid';
+         header('Content-Type: application/json');
+         echo json_encode($message);
+      }
+    }
+    if(isset($_GET['logingtc'])){
+      if(isset($_POST['username'])&&isset($_POST['password'])){
+         try {
+               $query= 'select * from goldtechcashadvance.dbo.loginform_tbl';
+               $stmt = $database->sqlcon()->prepare($query); 
+               $stmt->execute();
+               $result = $stmt->fetchAll();
+               $data = [];
+               if($stmt->rowCount() > 0 ){
+                  foreach ($result as $value) {
+                     $data['id']= $value['id'];
+                     $data['username']= $value['username'];
+                     $data['password']= $value['password'];
+                     $data['date_expire']= $value['date_expire'];
+                     $data['valid_hash']= $value['valid_hash'];
+                  }
+                  header('Content-Type: application/json');
+                  echo json_encode($data);
+               }
+         } catch (PDOException $err) {
+            $message['error']=false;
+            $message['message']=$err;
+            http_response_code(500);
+            header('Content-Type: application/json');
+            echo json_encode($message);
+         }
+      }
+      else{
+         $message['error']=true;
+         $message['message']='Make sure, your input valid properties and names.';
+         http_response_code(401);
+         header('Content-Type: application/json');
          echo json_encode($message);
       }
     }

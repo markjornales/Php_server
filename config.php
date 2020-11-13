@@ -167,58 +167,58 @@ class datacollect extends sqlserver {
   public $caResult;
   public $liqStatement;
   public $liqResult;
-  function ca_query($datafrom, $dateto, $unique_id){
-    $sql = 'select * from goldtechcashadvance.dbo.cash_advanceForms where 
-    date_of_ca between :datefrom and :dateto and unique_id=:unique_id order by date_of_ca desc';
-    $this->caStatemt = $this->sqlcon()->prepare($sql);
-    $this->caStatemt->bindParam(':datefrom', $datafrom);
-    $this->caStatemt->bindParam(':dateto',$dateto);
-    $this->caStatemt->bindParam(':unique_id', $unique_id);
-    $this->caStatemt->execute();
-    $this->caResult = $this->caStatemt->fetchAll();
-  }
-  function liq_query($unique_id, $value){
+
+    function ca_query($datafrom, $dateto, $unique_id){
+      $sql = 'select * from goldtechcashadvance.dbo.cash_advanceForms where 
+      date_of_ca between :datefrom and :dateto and unique_id=:unique_id order by date_of_ca desc';
+      $this->caStatemt = $this->sqlcon()->prepare($sql);
+      $this->caStatemt->bindParam(':datefrom', $datafrom);
+      $this->caStatemt->bindParam(':dateto',$dateto);
+      $this->caStatemt->bindParam(':unique_id', $unique_id);
+      $this->caStatemt->execute();
+      $this->caResult = $this->caStatemt->fetchAll();
+    }
+    function liq_query($unique_id, $value){
+        $queryString = 'select * from goldtechcashadvance.dbo.liquidation where unique_id=:unique_id and ca_number=:ca_number';
+        $this->liqStatement = $this->sqlcon()->prepare($queryString);
+        $this->liqStatement->bindParam(':unique_id', $unique_id);
+        $this->liqStatement->bindParam(':ca_number', $value['ca_number']);
+        $this->liqStatement->execute();
+        $this->liqResult =  $this->liqStatement->fetchAll();
+    }
+
+    function caUpdateStat($infor){
+      $unique_id = $infor['unique_id'];
+      $ca_number = $infor['ca_number'];
+      $ca_status = $infor['totalca'] > $infor['total_liq']?$infor['total_liq']==0?'pending...':'partial payment':'paid';
+      $sqlstring = 'update goldtechcashadvance.dbo.cash_advances set ca_status=:ca_status where unique_id=:unique_id and ca_number=:ca_number';
+      $stmt = $this->sqlcon()->prepare($sqlstring);
+      $stmt->bindParam(':unique_id', $unique_id);
+      $stmt->bindParam(':ca_status', $ca_status);
+      $stmt->bindParam(':ca_number', $ca_number);
+      $stmt->execute();
+      $message['message'] = 'success updated';
+      $message['status'] = $ca_status;
+      $message['error'] = false;
+      return $message;  
+    }
+    function caNoQuery($ca_number,$unique_id){
+      $queryString = 'select * from goldtechcashadvance.dbo.cash_advanceForms where unique_id=:unique_id and ca_number=:ca_number';
+      $this->caStatemt = $this->sqlcon()->prepare($queryString);
+      $this->caStatemt->bindParam(':unique_id', $unique_id);
+      $this->caStatemt->bindParam(':ca_number',$ca_number);
+      $this->caStatemt->execute();
+      $this->caResult = $this->caStatemt->fetchAll();
+    }
+
+    function liqQueryca($ca_number, $unique_id){
       $queryString = 'select * from goldtechcashadvance.dbo.liquidation where unique_id=:unique_id and ca_number=:ca_number';
       $this->liqStatement = $this->sqlcon()->prepare($queryString);
       $this->liqStatement->bindParam(':unique_id', $unique_id);
-      $this->liqStatement->bindParam(':ca_number', $value['ca_number']);
+      $this->liqStatement->bindParam(':ca_number', $ca_number);
       $this->liqStatement->execute();
-      $this->liqResult =  $this->liqStatement->fetchAll();
-  }
-
-  function caUpdateStat($infor){
-    $unique_id = $infor['unique_id'];
-    $ca_number = $infor['ca_number'];
-    $ca_status = $infor['totalca'] > $infor['total_liq']?$infor['total_liq']==0?'pending...':'partial payment':'paid';
-    $sqlstring = 'update goldtechcashadvance.dbo.cash_advances set ca_status=:ca_status where unique_id=:unique_id and ca_number=:ca_number';
-    $stmt = $this->sqlcon()->prepare($sqlstring);
-    $stmt->bindParam(':unique_id', $unique_id);
-    $stmt->bindParam(':ca_status', $ca_status);
-    $stmt->bindParam(':ca_number', $ca_number);
-    $stmt->execute();
-    $message['message'] = 'success updated';
-    $message['status'] = $ca_status;
-    $message['error'] = false;
-    return $message;  
-  }
-  function caNoQuery($ca_number,$unique_id){
-    $queryString = 'select * from goldtechcashadvance.dbo.cash_advanceForms where unique_id=:unique_id and ca_number=:ca_number';
-    $this->caStatemt = $this->sqlcon()->prepare($queryString);
-    $this->caStatemt->bindParam(':unique_id', $unique_id);
-    $this->caStatemt->bindParam(':ca_number',$ca_number);
-    $this->caStatemt->execute();
-    $this->caResult = $this->caStatemt->fetchAll();
-  }
-
-  function liqQueryca($ca_number, $unique_id){
-    $queryString = 'select * from goldtechcashadvance.dbo.liquidation where unique_id=:unique_id and ca_number=:ca_number';
-    $this->liqStatement = $this->sqlcon()->prepare($queryString);
-    $this->liqStatement->bindParam(':unique_id', $unique_id);
-    $this->liqStatement->bindParam(':ca_number', $ca_number);
-    $this->liqStatement->execute();
-    $this->liqResult = $this->liqStatement->fetchAll();
-  }
-
+      $this->liqResult = $this->liqStatement->fetchAll();
+    }
 
 }
 
