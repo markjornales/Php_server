@@ -186,6 +186,15 @@ class datacollect extends sqlserver {
         $this->liqStatement->execute();
         $this->liqResult =  $this->liqStatement->fetchAll();
     }
+    function ca_query_noOnly($ca_number, $unique_id){
+      $sql = 'select * from goldtechcashadvance.dbo.cash_advanceForms where ca_number=:ca_number and unique_id=:unique_id order by date_of_ca desc';
+      $this->caStatemt = $this->sqlcon()->prepare($sql);
+      $this->caStatemt->bindParam(':ca_number',$ca_number);
+      $this->caStatemt->bindParam(':unique_id', $unique_id);
+      $this->caStatemt->execute();
+      $this->caResult = $this->caStatemt->fetchAll();
+    }
+   
 
     function caUpdateStat($infor){
       $unique_id = $infor['unique_id'];

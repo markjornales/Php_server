@@ -56,13 +56,17 @@
 		$stmt_mssql->execute();
 		$stmt_mssql2->execute();
 		$datacollect = [];
+      $count_id = 0;
 		while ($rows=$stmt_mssql->fetch(PDO::FETCH_ASSOC)) {
 			$datacollect['listnames'] = $rows['listnames'];
 			$datacollect['unique_id'] = $rows['unique_id'];
 			$datacollect['cash_advances']=[];
 			while ($rows2 = $stmt_mssql2->fetch(PDO::FETCH_ASSOC)) {
+            $count_id++;
 				array_push($datacollect['cash_advances'],
-					array('ca_number'=>$rows2['ca_number'],
+					array(
+               'no'=> $count_id,
+               'ca_number'=>$rows2['ca_number'],
 					'date_of_ca'=>$rows2['date_of_ca'],
 					'date_needed'=>$rows2['date_needed'],
 					'ca_status'=>$rows2['ca_status'])
