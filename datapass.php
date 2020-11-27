@@ -385,9 +385,10 @@
                      $data['password']= $value['password'];
                      $data['date_expire']= $value['date_expire'];
                      $data['valid_hash']= $value['valid_hash'];
+                     $datacollect[]=$data;
                   }
                   header('Content-Type: application/json');
-                  echo json_encode($data);
+                  echo json_encode($datacollect);
                }
          } catch (PDOException $err) {
             $message['error']=false;
